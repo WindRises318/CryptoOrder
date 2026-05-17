@@ -51,3 +51,60 @@ export interface PendingOrder {
   totalCost: number;
   leverage: number;
 }
+
+
+export type JournalEmotion = 'calm' | 'fomo' | 'revenge' | 'fear' | 'greed';
+
+export interface JournalNote {
+  setupTags: string[];
+  entryReason: string;
+  emotion: JournalEmotion | null;
+  executionScore: number | null;
+  lessonsLearned: string;
+  planSl: number | null;
+  actualSl: number | null;
+}
+
+export interface JournalItem {
+  id: string;
+  symbol: string;
+  side: 'long' | 'short';
+  entryPrice: number;
+  exitPrice: number;
+  qty: number;
+  fee: number;
+  realizedPnl: number;
+  durationSec: number;
+  mae: number | null;
+  mfe: number | null;
+  status: 'draft' | 'completed';
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface JournalDetail extends JournalItem {
+  note: JournalNote;
+}
+
+export interface JournalListResponse {
+  items: JournalDetail[];
+  page: number;
+  pageSize: number;
+  total: number;
+  summary: {
+    winRate: number;
+    netPnl: number;
+    avgPnl: number;
+    maxDrawdown: number;
+  };
+}
+
+export interface UpdateJournalNoteRequest {
+  setupTags: string[];
+  entryReason?: string;
+  emotion?: JournalEmotion | null;
+  executionScore: number;
+  lessonsLearned?: string;
+  planSl?: number | null;
+  actualSl?: number | null;
+}
