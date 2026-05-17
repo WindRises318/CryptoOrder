@@ -2,6 +2,16 @@ import { JournalDetail, JournalListResponse, UpdateJournalNoteRequest } from '..
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+
+function validateUpdatePayload(payload: UpdateJournalNoteRequest) {
+  if (!payload.setupTags || payload.setupTags.length === 0) {
+    throw new Error('setupTags is required');
+  }
+  if (!payload.executionScore || payload.executionScore < 1 || payload.executionScore > 5) {
+    throw new Error('executionScore must be between 1 and 5');
+  }
+}
+
 const mockJournals: JournalDetail[] = [
   {
     id: 'j-1',
@@ -47,6 +57,7 @@ export async function listJournals(): Promise<JournalListResponse> {
 }
 
 export async function updateJournalNote(id: string, payload: UpdateJournalNoteRequest): Promise<JournalDetail | null> {
+  validateUpdatePayload(payload);
   await wait(120);
   const journal = mockJournals.find(x => x.id === id);
   if (!journal) return null;
