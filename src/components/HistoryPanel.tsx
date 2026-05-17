@@ -1,6 +1,6 @@
 import React from 'react';
-import { History } from 'lucide-react';
-import { TradeHistory, Position } from '../types';
+import { TradeHistory, Position, JournalDetail } from '../types';
+import { listJournals } from '../services/journalApi';
 import { SymbolInfo } from '../services/binance';
 import { cn, formatCurrency, formatNumber } from '../lib/utils';
 
@@ -18,11 +18,16 @@ import { format } from 'date-fns';
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({ symbol, symbolInfo, history, position, currentPrice, unrealizedPnl, onClose }) => {
   const [activeTab, setActiveTab] = React.useState('Positions');
+  const [journals, setJournals] = React.useState<JournalDetail[]>([]);
+
+  React.useEffect(() => {
+    void listJournals().then((res) => setJournals(res.items));
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-zinc-950 border-t border-zinc-800 font-sans">
       <div className="flex border-b border-zinc-800 px-2 overflow-x-auto no-scrollbar">
-        {['Positions', 'Open Orders', 'Order History', 'Trade History', 'Transaction History'].map(tab => (
+        {['Positions', 'Journal', 'Trade History'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -105,6 +110,35 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ symbol, symbolInfo, 
                   </td>
                 </tr>
               )}
+            </tbody>
+          </table>
+        ) : activeTab === 'Journal' ? (
+          <table className="w-full text-[10px] text-left">
+            <thead className="text-zinc-500 uppercase font-bold sticky top-0 bg-zinc-950 border-b border-zinc-900">
+              <tr>
+                <th className="px-4 py-2">Time</th>
+                <th className="px-4 py-2">Symbol</th>
+                <th className="px-4 py-2">Side</th>
+                <th className="px-4 py-2 text-right">PnL</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Tags</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-900">
+              {journals.length === 0 ? (
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-zinc-600 italic">No journals</td></tr>
+              ) : journals.map((j) => (
+                <tr key={j.id} className="hover:bg-zinc-900/50 transition-colors">
+                  <td className="px-4 py-2 text-zinc-500 font-mono">{format(j.updatedAt, 'MM-dd HH:mm:ss')}</td>
+                  <td className="px-4 py-2 font-bold">{j.symbol}</td>
+                  <td className="px-4 py-2">{j.side}</td>
+                  <td className={cn("px-4 py-2 text-right font-mono", j.realizedPnl >= 0 ? "text-green-400" : "text-red-400")}>{j.realizedPnl >= 0 ? '+' : ''}{formatCurrency(j.realizedPnl)}</td>
+                  <td className="px-4 py-2">
+                    <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase", j.status === "completed" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-500")}>{j.status}</span>
+                  </td>
+                  <td className="px-4 py-2 text-zinc-400">{j.note.setupTags.join(', ') || '--'}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         ) : activeTab === 'Trade History' ? (
