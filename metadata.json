@@ -1,0 +1,5 @@
+{
+  "name": "Crypto Order Flow Simulator",
+  "description": "A professional-grade crypto trading simulator featuring historical K-line replay and order flow visualization using Binance data.",
+  "requestFramePermissions": []
+}
